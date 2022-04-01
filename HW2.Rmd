@@ -1,0 +1,620 @@
+---
+title: "Assignment2"
+author: "Simran Goindani"
+date: "2/25/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+set.seed(47)                            # Create example data
+x <- runif(50,min=-2,max = 2)
+e <- rnorm(50, 0, 4)  
+y <- rnorm(100) + 0.5 * x
+y <- 3 + 2 * x + e  
+my_data <- data.frame(x, y)
+head(my_data) 
+plot(x, y)
+model <- lm(y ~ x)
+coef(model)
+summary(model)
+#y_pred = predict(model)
+y_pred <- predict(model)
+abline(model)
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r}
+
+set.seed(1)
+#x = runif(100,-100,100)
+x= c(-20:20)
+y1 = x**2
+y2=  abs(x)
+delta1 = 0.5
+delta2 = 3
+mse = 0.5 * (x**2)
+mae1 = delta1 * (abs(x) - 0.5*delta1)
+mae2 = delta2 * (abs(x) - 0.5*delta2)
+huber_1 = ifelse( abs(x) <= delta1, mse, mae1)
+huber_2 = ifelse( abs(x) <= delta2, mse, mae2)
+
+#plot(x,col2,col = "red")
+#par(new=TRUE)
+#points(x,y1,col = "cyan")
+#par(new=TRUE)
+#points(x,y2,col = "black")
+
+#df=data.frame(x,y1,y2,huber_1,huber_2)
+#df <- as.data.frame(df)
+
+#df2 = melt(data=df,id.vars ="x")
+#df2
+#plot(x, col2, col='blue', lty = 1,pch=19,lwd=1)
+#points(x,y1,col = "cyan")
+#points(x,y2,col = "black")
+
+x
+y1
+y2
+huber_1
+huber_2
+
+#huber1 <- function(x, a=5) ifelse (abs(x) <= a, 0.5*(x^2), a*abs(x)-0.5*a^2)
+
+
+
+
+plot(x,y2,col = "red",type = "l")
+
+lines(x,y1,col = "cyan")
+
+lines(x,huber_1,col = "black")
+
+lines(x,huber_2,col = "green")
+
+#legend("top", legend=c("L1", "L2","Huber_1","Huber_2"),
+#       col=c("red", "cyan","black","green"),lty =1)
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+#Gradient Descent Code
+
+gradient_descent <- function(X,y,alpha,iterations,type){
+  n = length(y)
+  m <- runif(1, 0, 1)
+  c <- runif(1, 0, 1)
+  iter = 0
+  hypothesis = m*X+c
+  while (iter < iterations){
+    
+    if (type == "Quadratic"){
+      loss = hypothesis - y
+    }
+    else if(type == "mean_absolute"){
+      loss = hypothesis - y
+      loss[loss>0] = 1
+      loss[loss<0] = -1
+    }
+    else if (type == "huber"){
+      delta = 5
+      huber1 <- function(d, delta=5) ifelse (abs(d) <= a, 0.5*(d^2), a*abs(d)-0.5*d^2)
+      loss = hypothesis - y
+      loss[abs(loss) <= delta] = loss[abs(loss) <= delta]
+      loss[abs(loss) > delta] = delta * sign(loss[abs(loss) > delta])
+    }
+    gradient = sum(loss*X)
+    m_new <- m - alpha * ((1 / n) * gradient)
+    c_new <- c - alpha *((1 / n) * sum(loss))
+    m <- m_new
+    c <- c_new
+    hypothesis = m*X+c
+    iter = iter +1
+    }
+  print(paste("Optimal intercept:", c, "Optimal slope:", m))
+  return(m)
+}
+
+
+set.seed(1)
+x = runif(50,-20,20)
+e = rnorm(50,0,4)
+y = 3 + 2 * x +e
+gradient_descent(x,y,0.01,1000,"Quadratic")
+print("Hi")
+```
+```{r}
+#Stochastic Gradient Descent
+Stoc_gradient_descent <- function(X,y,alpha,iterations,type){
+  n = length(y)
+  m <- runif(1, 0, 1)
+  c <- runif(1, 0, 1)
+  iter = 0
+  
+  while (iter<iterations){
+   
+    iter = iter+1
+    j=0
+    while (j < n){
+      hypothesis = m*X+c
+      yhat = m * X + c
+    
+      if (type == "Quadratic"){
+        loss = hypothesis - y
+      }
+      else if(type == "mean_absolute"){
+        loss = hypothesis - y
+        loss[loss>0] = 1
+        loss[loss<0] = -1
+      }
+      else if (type == "huber"){
+        delta = 5
+        huber1 <- function(x, delta=5) ifelse (abs(x) <= a, 0.5*(x^2), a*abs(x)-0.5*a^2)
+        loss = hypothesis - y
+        loss[abs(loss) <= delta] = loss[abs(loss) <= delta]
+        loss[abs(loss) > delta] = delta * sign(loss[abs(loss) > delta])
+      }
+      gradient = sum(X*loss)
+      m_new <- m - alpha * ((1 / n) * gradient)
+      c_new <- c - alpha * ((1 / n) * (sum(loss)))
+      m <- m_new
+      c <- c_new
+      j = j+1
+     
+    }
+    
+  }
+  #return(paste("Optimal intercept:", c, "Optimal slope:", m))  
+  return(m)
+  
+}
+
+
+```
+
+
+
+```{r}
+#ans4a
+set.seed(1)
+x = runif(50,-20,20)
+e = rnorm(50,0,4)
+y = 3 + 2 * x +e
+gradient_descent(x,y,0.01,1000,"huber")
+Stoc_gradient_descent(x,y,0.01,1000,"huber")
+#sgd(x,y,0.01,0.01,50,1000)
+```
+
+
+```{r}
+#plotting histogram
+ana_list = c()
+huber_list = c()
+mse_list = c()
+for (i in 1:10){
+  x = matrix(runif(50,-20,20))
+  e = rnorm(50,0,4)
+  y = 3 + 2 * x + e
+  X = cbind(1,x)
+  #print(class(X))
+  print(class(y))
+  ana_list = append(ana_list,analytical_solution(X,y)[2])
+  huber_list = append(huber_list,Stoc_gradient_descent(x,y,0.01,1000,"huber"))
+  mse_list = append(mse_list,Stoc_gradient_descent(x,y,0.01,1000,"Quadratic"))
+}
+```
+
+
+```{r}
+#Stoc_gradient_descent(x,y,0.01,1000,"huber")
+#hist(ana_list)
+#hist(huber_list)
+hist(mse_list)
+```
+
+
+```{r}
+# ana_list = c()
+# huber_list = c()
+# mse_list = c()
+# for (i in 1:5){
+#   x = matrix(runif(5,-20,20))
+#   e = rnorm(5,0,4)
+#   y = 3 + 2 * x + e
+# 
+#   X = cbind(1,x)
+#   set.seed(1)
+#   sel_ten = sample(1:5,3)
+#   sel_pos = sample(sel_ten,2)
+#   sel_neg = setdiff(sel_ten,sel_pos)
+#   # print(y[sel_pos])
+#   # print(y[sel_neg])
+#   # y[sel_pos] = invisible(lapply(y[sel_pos],double_val))
+#   # y[sel_neg] = invisible(lapply(y[sel_neg],half_val))
+#   # y1 = matrix(y)
+#   # print(class(y1))
+#   #ana_list = append(ana_list,analytical_solution(X,y1)[2])
+#   huber_list = append(huber_list,Stoc_gradient_descent(x,y1,0.01,1000,"huber"))
+#   mse_list = append(mse_list,Stoc_gradient_descent(x,y1,0.01,1000,"Quadratic"))
+# }
+
+ana_list = c()
+huber_list = c()
+mse_list = c()
+for (i in 1:100){
+  x = matrix(runif(50,-20,20))
+  e = rnorm(50,0,4)
+  y = 3 + 2 * x + e
+  X = cbind(1,x)
+  sel_ten = sample(1:50,5)
+  sel_pos = sample(sel_ten,3)
+  sel_neg = setdiff(sel_ten,sel_pos)
+  y[sel_pos] = invisible(lapply(y[sel_pos],double_val))
+  y[sel_neg] = invisible(lapply(y[sel_pos],half_val))
+  y = matrix(unlist(y))
+  ana_list = append(ana_list,analytical_solution(X,y)[2])
+  huber_list = append(huber_list,Stoc_gradient_descent(x,y,0.01,1000,"huber"))
+  mse_list = append(mse_list,Stoc_gradient_descent(x,y,0.01,1000,"Quadratic"))
+ 
+}
+print("done")
+```
+
+```{r}
+options(warn=-1)
+```
+
+
+```{r}
+  options(warn=-1)
+  x = matrix(runif(25,-20,20))
+  e = rnorm(25,0,4)
+  y = 3 + 2 * x + e
+  y
+  X = cbind(1,x)
+  sel_ten = sample(1:25,5)
+  sel_ten
+  sel_pos = sample(sel_ten,3)
+  sel_pos
+  sel_neg = setdiff(sel_ten,sel_pos)
+  sel_neg
+  y[sel_pos] = invisible(lapply(y[sel_pos],double_val))
+  y[sel_neg] = invisible(lapply(y[sel_pos],half_val))
+  y = matrix(unlist(y))
+```
+
+
+
+```{r}
+p1 = hist(ana_list)
+p2 = hist(huber_list)
+p3 = hist(mse_list)
+plot( p1, col=rgb(0,0,1,1/4))  # first histogram
+plot( p2, col=rgb(1,0,0,1/4), add=T)
+plot( p3, col=rgb(0,1,0,1/4), add=T)
+legend("topright",        # Add legend to plot
+       c("analytical", "huber", "mse"),
+       col = (c(rgb(0,0,1,1/4),rgb(1,0,0,1/4),rgb(0,1,0,1/4))),
+       lty = 1,lwd=2)
+```
+
+
+```{r}
+# ans 4e add outliers in y 
+x = matrix(runif(5,-20,20))
+e = rnorm(5,0,4)
+y = 3 + 2 * x + e
+set.seed(1)
+#select 0.1 of Y
+double_val<- function(x){
+  y = 2*x
+  return(y)
+}
+half_val <- function(x){
+  y = x/2
+  return(y)
+}
+sel_ten = sample(1:5,3)
+sel_pos = sample(sel_ten,1)
+sel_neg = setdiff(sel_ten,sel_pos)
+print(y)
+class(y)
+y[sel_pos] = invisible(lapply(y[sel_pos],double_val))
+y[sel_neg] = invisible(lapply(y[sel_neg],half_val))
+y = matrix(unlist(y))
+print(y)
+class(y)
+
+```
+
+
+```{r}
+#testing my code 
+#Code for gradient descent
+
+
+gradient_descent <- function(X,y,alpha,iterations,type){
+  n = length(y)
+  m <- runif(1, 0, 1)
+  c <- runif(1, 0, 1)
+  yhat <- m * X + c
+  iter = 0
+  for (i in iter:iterations){
+    
+    hypothesis = m*X+c
+    yhat = m * X + c
+    
+    if (type == "Quadratic"){
+      loss = hypothesis - y
+  
+    }
+    else if(type == "mean_absolute"){
+      loss = hypothesis - y
+      loss[loss>0] = 1
+      loss[loss<0] = -1
+    }
+    else if (type == "huber"){
+      delta = 5
+      huber1 <- function(x, delta=5) ifelse (abs(x) <= a, 0.5*(x^2), a*abs(x)-0.5*a^2)
+      loss = hypothesis - y
+      loss[abs(loss) <= delta] = loss[abs(loss) <= delta]
+      loss[abs(loss) > delta] = delta * sign(loss[abs(loss) > delta])
+    }
+    gradient = sum(X*loss)
+    m_new <- m - alpha * (1 / n) * gradient
+    c_new <- c - alpha * (1 / n) * sum(loss)
+    m <- m_new
+    c <- c_new
+    iter = iter +1
+    return(paste("Optimal intercept:", c, "Optimal slope:", m))
+    }
+  
+}
+
+
+set.seed(1)
+x = runif(50,-20,20)
+e = rnorm(50,0,4)
+y = 3 + 2 * x +e
+gradient_descent(x,y,0.01,10,"huber")
+print("Hi")
+sgd <- function(x, y, learn_rate, conv_threshold, n, max_iter) {
+  plot(x, y, col = "blue", pch = 20)
+  m <- runif(1, 0, 1)
+  c <- runif(1, 0, 1)
+  #print(" real m and c")
+  yhat <- m * x + c
+  MSE <- sum((y - yhat) ^ 2) / n
+  converged = F
+  iterations = 0
+  costs <- c()
+  while(converged == F) {
+    ## Implement the gradient descent algorithm
+    m_new <- m - learn_rate * ((1 / n) * (sum((yhat - y) * x)))
+    c_new <- c - learn_rate * ((1 / n) * (sum(yhat - y)))
+    m <- m_new
+    c <- c_new
+    yhat <- m * x + c
+    print(m)
+    print(c)
+    MSE_new <- sum((y - yhat) ^ 2) / n
+    if(MSE - MSE_new <= conv_threshold) {
+      abline(c, m)
+      converged = T
+      return(paste("Optimal intercept:", c, "Optimal slope:", m))
+    }
+    iterations = iterations + 1
+    if(iterations > max_iter) {
+      abline(c, m)
+      converged = T
+      
+      return(paste("Optimal intercept: im here", c, "Optimal slope:", m))
+    }
+  }
+}
+
+# 
+# sgd(X,y,0.01,0.5,2,0)
+# 
+# print("1st step")
+#costfunc(theta,X,y)
+
+```
+```{r}
+#Stochastic Gradient Descent
+gradient_descent <- function(X,y,alpha,iterations,convergence,type){
+  n = length(y)
+  m <- runif(1, 0, 1)
+  c <- runif(1, 0, 1)
+  yhat <- m * X + c
+  #cost = costfunc(m,c,X,y)
+  iter = 0
+  #hypothesis = m*X+c
+  for (i in iter:iterations){
+    
+    hypothesis = m*X+c
+    yhat = m * X + c
+    
+    if (type == "Quadratic"){
+      loss = hypothesis - y
+  
+    }
+    else if(type == "mean_absolute"){
+      loss = hypothesis - y
+      loss[loss>0] = 1
+      loss[loss<0] = -1
+    }
+    else if (type == "huber"){
+      delta = 5
+      huber1 <- function(x, delta=5) ifelse (abs(x) <= a, 0.5*(x^2), a*abs(x)-0.5*a^2)
+      loss = hypothesis - y
+      loss[abs(loss) <= delta] = loss[abs(loss) <= delta]
+      loss[abs(loss) > delta] = delta * sign(loss[abs(loss) > delta])
+    }
+    gradient = sum(X*loss)
+    m_new <- m - alpha * (1 / n) * gradient
+    c_new <- c - alpha * (1 / n) * sum(loss)
+    m <- m_new
+    c <- c_new
+    iter = iter +1
+    return(paste("Optimal intercept:", c, "Optimal slope:", m))
+    }
+  
+}
+```
+
+```{r}
+install.packages("pracma", repos="http://R-Forge.R-project.org")
+
+```
+
+```{r}
+# function for analytic solution
+library(pracma)
+analytical_solution <- function(x,y){
+   theta2=solve((t(X)%*%X))%*%t(X)%*%y
+   return(theta2)
+}
+
+
+set.seed(1)
+X1= matrix(runif(5,-20,20))
+#x <- matrix(c(1,1,1,2,3,4), nrow = 3,ncol = 2)
+X =  cbind(1,X1)
+e = rnorm(5,0,4)
+y = 3 + 2 * X1 +e
+theta2=analytical_solution(X,y)
+theta2
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+
+```
+```{r}
+
+```
+
+```{r}
+sgd <- function(x, y, learn_rate, conv_threshold, n, max_iter) {
+  plot(x, y, col = "blue", pch = 20)
+  m <- runif(1, 0, 1)
+  c <- runif(1, 0, 1)
+  yhat <- m * x + c
+  MSE <- sum((y - yhat) ^ 2) / n
+  converged = F
+  iterations = 0
+  while(converged == F) {
+    ## Implement the gradient descent algorithm
+    m_new <- m - learn_rate * ((1 / n) * (sum((yhat - y) * x)))
+    c_new <- c - learn_rate * ((1 / n) * (sum(yhat - y)))
+    m <- m_new
+    c <- c_new
+    yhat <- m * x + c
+    MSE_new <- sum((y - yhat) ^ 2) / n
+    
+    if(MSE - MSE_new <= conv_threshold) {
+      abline(c, m) 
+      converged = T
+      return(paste("Optimal intercept:", c, "Optimal slope:", m))
+    }
+    iterations = iterations + 1
+    if(iterations > max_iter) { 
+      abline(c, m) 
+      converged = T
+      return(paste("Optimal intercept:", c, "Optimal slope:", m))
+    }
+  }
+}
+
+
+# Run the function
+set.seed(1)
+x = runif(50,-20,20)
+e = rnorm(50,0,4)
+y = 3 + 2 * x +e
+gradientDesc(x,y, 0.0000293, 0.001, 32, 2500000)
+
+
+```
+
+```{r}
+gradient_descent <- function(X,y,alpha,iterations,type,convergence){
+  n = length(y)
+  m <- runif(1, 0, 1)
+  c <- runif(1, 0, 1)
+  iter = 0
+  hypothesis = m*X+c
+  converged = F
+  MSE <- sum((y-hypothesis)^2)/n
+  while (converged == F){
+    hypothesis = m*X+c
+    MSE_new = sum((y-hypothesis)^2)/n
+    if (type == "Quadratic"){
+      loss = hypothesis - y
+    }
+    else if(type == "mean_absolute"){
+      loss = hypothesis - y
+      loss[loss>0] = 1
+      loss[loss<0] = -1
+    }
+    else if (type == "huber"){
+      delta = 5
+      huber1 <- function(d, delta=5) ifelse (abs(d) <= a, 0.5*(d^2), a*abs(d)-0.5*d^2)
+      loss = hypothesis - y
+      loss[abs(loss) <= delta] = loss[abs(loss) <= delta]
+      loss[abs(loss) > delta] = delta * sign(loss[abs(loss) > delta])
+    }
+    gradient = sum(loss*X)
+    m_new <- m - alpha * ((1 / n) * gradient)
+    c_new <- c - alpha *((1 / n) * sum(loss))
+    m <- m_new
+    c <- c_new
+    hypothesis = m*X+c
+    iter = iter +1
+    if(MSE - MSE_new <= convergence){
+      #abline(c,m)
+      converged = T
+      print(paste("Optimal intercept:",c,"Optimal slope:",m))
+      return (m)
+    }
+    if(iter > iterations){
+      #abline(c,m)
+      converged = T
+      print(paste("Optimal intercept:",c,"Optimal slope:",m))
+      return (m)
+    }
+    }
+  #return(paste("Optimal intercept:", c, "Optimal slope:", m))
+  
+}
+
+set.seed(1)
+x = runif(50,-20,20)
+e = rnorm(50,0,4)
+y = 3 + 2 * x +e
+gradient_descent(x,y,0.01,1000,"Quadratic",0.001)
+print("Hi")
+```
+
